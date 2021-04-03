@@ -1,0 +1,36 @@
+version 0.2
+
+phases:
+  # install:
+  #   commands:
+
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR....
+      - aws --version
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      # sidecar/app ecr repos
+      - NGINX_REPOSITORY_URI=477829879262.dkr.ecr.us-east-1.amazonaws.com/nginx-sidecar
+      - NODE_REPOSITORY_URI=477829879262.dkr.ecr.us-east-1.amazonaws.com/node-sidecar
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Node Docker image...
+      - docker build -f ./docker/app/Dockerfile -t $NODE_REPOSITORY_URI:latest .
+      - docker tag $NODE_REPOSITORY_URI:latest $NODE_REPOSITORY_URI:$IMAGE_TAG
+      - echo Building the NGINX Docker image...
+      - docker build -f ./docker/nginx/Dockerfile -t $NGINX_REPOSITORY_URI:latest .
+      - docker tag $NGINX_REPOSITORY_URI:latest $NGINX_REPOSITORY_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Node Docker image...
+      - docker push $NODE_REPOSITORY_URI:latest
+      - docker push $NODE_REPOSITORY_URI:$IMAGE_TAG
+      - echo Pushing the NGINX Docker image...
+      - docker push $NGINX_REPOSITORY_URI:latest
+      - docker push $NGINX_REPOSITORY_URI:$IMAGE_TAG
