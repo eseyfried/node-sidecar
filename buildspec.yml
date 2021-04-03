@@ -8,7 +8,7 @@ phases:
     commands:
       - echo Logging in to Amazon ECR....
       - aws --version
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - $(aws ecr get-login-password --region $AWS_DEFAULT_REGION --no-include-email)
       # sidecar/app ecr repos
       - NGINX_REPOSITORY_URI=477829879262.dkr.ecr.us-east-1.amazonaws.com/nginx-sidecar
       - NODE_REPOSITORY_URI=477829879262.dkr.ecr.us-east-1.amazonaws.com/node-sidecar
