@@ -20,7 +20,7 @@ router.get('/api/lorem-ipsum', function *() {
 });
 
 router.get('/api/health-check', function *() {
-  this.body = 'Ready';
+  this.body = 'Service is Up and Ready';
 });
 
 app.use(router.routes());
