@@ -219,6 +219,28 @@ resource "aws_alb_target_group" "ecs-target-group" {
     }
 }
 
+resource "aws_alb_target_group" "ecs-target-group-test" {
+    name                = "ecs-target-group-test"
+    port                = "8080"
+    protocol            = "HTTP"
+    vpc_id              = aws_vpc.demoVPC.id
+
+    health_check {
+        healthy_threshold   = "5"
+        unhealthy_threshold = "2"
+        interval            = "30"
+        matcher             = "200"
+        path                = "/api/health-check"
+        port                = "traffic-port"
+        protocol            = "HTTP"
+        timeout             = "5"
+    }
+
+    tags = {
+      Name = "ecs-target-group-test"
+    }
+}
+
 resource "aws_alb_listener" "alb-listener" {
     load_balancer_arn = aws_alb.ecs-load-balancer.arn
     port              = "80"
@@ -226,6 +248,17 @@ resource "aws_alb_listener" "alb-listener" {
 
     default_action {
         target_group_arn = aws_alb_target_group.ecs-target-group.arn
+        type             = "forward"
+    }
+}
+
+resource "aws_alb_listener" "alb-listener-test" {
+    load_balancer_arn = aws_alb.ecs-load-balancer.arn
+    port              = "8080"
+    protocol          = "HTTP"
+
+    default_action {
+        target_group_arn = aws_alb_target_group.ecs-target-group-test.arn
         type             = "forward"
     }
 }
@@ -262,6 +295,9 @@ resource "aws_autoscaling_group" "ecs-autoscaling-group" {
     vpc_zone_identifier         = [aws_subnet.demoPubSN0-0.id, aws_subnet.demoPubSN0-1.id]
     launch_configuration        = aws_launch_configuration.ecs-launch-configuration.name
     health_check_type           = "ELB"
+    lifecycle {
+      create_before_destroy = true
+    }
 }
 
 resource "aws_ecs_cluster" "test-ecs-cluster" {
@@ -339,13 +375,18 @@ resource "aws_ecs_service" "test-ecs-service" {
   	task_definition = aws_ecs_task_definition.microservice_a.family
   	desired_count   = 1
 
+    deployment_controller {
+        type = "CODE_DEPLOY"
+    }
+
   	load_balancer {
     	target_group_arn  = aws_alb_target_group.ecs-target-group.arn
     	container_port    = 80
     	container_name    = "nginx"
 	}
   depends_on = [
-    aws_alb_listener.alb-listener
+    aws_alb_listener.alb-listener,
+    aws_alb_listener.alb-listener-test
   ]
   
 }
