@@ -19,7 +19,7 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Node Docker image...
-      - docker build -f ./docker/app/Dockerfile -t $NODE_REPOSITORY_URI:latest ./docker/node/
+      - docker build -f ./docker/app/Dockerfile -t $NODE_REPOSITORY_URI:latest ./docker/app/
       - docker tag $NODE_REPOSITORY_URI:latest $NODE_REPOSITORY_URI:$IMAGE_TAG
       - echo Building the NGINX Docker image...
       - docker build -f ./docker/nginx/Dockerfile -t $NGINX_REPOSITORY_URI:latest ./docker/nginx/
