@@ -1,0 +1,59 @@
+{
+    "executionRoleArn": "arn:aws:iam::account_ID:role/ecsTaskExecutionRole",
+    "containerDefinitions": [
+        {
+          "name": "nginx",
+          "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/nginx-sidecar:latest",
+          "memory": 256,
+          "cpu": 256,
+          "essential": true,
+          "portMappings": [
+            {
+              "containerPort": 80,
+              "hostPort": 80,
+              "protocol": "tcp"
+            }
+          ],
+          "links": [
+            "app"
+          ],
+          "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "/ecs/microservice_a",
+                  "awslogs-region": "us-east-1",
+                  "awslogs-stream-prefix": "ecs"
+                }
+          },
+          "healthCheck": {
+              "retries": 3,
+              "command": [
+                "CMD-SHELL",
+                "curl -f http://localhost/api/health-check || exit 1"
+              ],
+              "timeout": 5,
+              "interval": 30,
+              "startPeriod": null
+          }
+        },
+        {
+          "name": "app",
+          "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/node-sidecar:latest",
+          "memory": 256,
+          "cpu": 256,
+          "essential": true,
+          "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                  "awslogs-group": "/ecs/microservice_a",
+                  "awslogs-region": "us-east-1",
+                  "awslogs-stream-prefix": "ecs"
+                }
+          }
+        }
+      ],
+    "networkMode": "bridge",
+    "cpu": "256",
+    "memory": "512",
+    "family": "microservice_a"
+}
