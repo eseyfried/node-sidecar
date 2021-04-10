@@ -58,6 +58,17 @@ resource "aws_route_table" "demoPubSN0-0RT" {
   }
 }
 
+# NAT Gateway for Public subnet
+resource "aws_eip" "nat" {
+  vpc = true
+}
+resource "aws_nat_gateway" "nat-gw" {
+  allocation_id = aws_eip.nat.id
+  subnet_id     = aws_subnet.demoPubSN0-0.id
+  depends_on = [aws_internet_gateway.demoIG]
+}
+
+
 resource "aws_route_table" "demoPubSN0-1RT" {
   vpc_id = aws_vpc.demoVPC.id
   route {
@@ -68,6 +79,7 @@ resource "aws_route_table" "demoPubSN0-1RT" {
     Name = "demoPubSN0-1RT"
   }
 }
+
 
 # Associate the routing table to public subnet
 resource "aws_route_table_association" "demoPubSN0-0RTAssn" {
@@ -197,8 +209,8 @@ resource "aws_alb" "ecs-load-balancer" {
     }
 }
 
-resource "aws_alb_target_group" "ecs-target-group" {
-    name                = "ecs-target-group"
+resource "aws_alb_target_group" "ecs-target-group-blue" {
+    name                = "ecs-target-group-blue"
     port                = "80"
     protocol            = "HTTP"
     vpc_id              = aws_vpc.demoVPC.id
@@ -215,13 +227,13 @@ resource "aws_alb_target_group" "ecs-target-group" {
     }
 
     tags = {
-      Name = "ecs-target-group"
+      Name = "ecs-target-group-blue"
     }
 }
 
-resource "aws_alb_target_group" "ecs-target-group-test" {
-    name                = "ecs-target-group-test"
-    port                = "8080"
+resource "aws_alb_target_group" "ecs-target-group-green" {
+    name                = "ecs-target-group-green"
+    port                = "80"
     protocol            = "HTTP"
     vpc_id              = aws_vpc.demoVPC.id
 
@@ -237,17 +249,17 @@ resource "aws_alb_target_group" "ecs-target-group-test" {
     }
 
     tags = {
-      Name = "ecs-target-group-test"
+      Name = "ecs-target-group-green"
     }
 }
 
-resource "aws_alb_listener" "alb-listener" {
+resource "aws_alb_listener" "alb-listener-prod" {
     load_balancer_arn = aws_alb.ecs-load-balancer.arn
     port              = "80"
     protocol          = "HTTP"
 
     default_action {
-        target_group_arn = aws_alb_target_group.ecs-target-group.arn
+        target_group_arn = aws_alb_target_group.ecs-target-group-blue.arn
         type             = "forward"
     }
 }
@@ -258,7 +270,7 @@ resource "aws_alb_listener" "alb-listener-test" {
     protocol          = "HTTP"
 
     default_action {
-        target_group_arn = aws_alb_target_group.ecs-target-group-test.arn
+        target_group_arn = aws_alb_target_group.ecs-target-group-green.arn
         type             = "forward"
     }
 }
@@ -370,7 +382,7 @@ DEF
 
 resource "aws_ecs_service" "test-ecs-service" {
   	name            = "test-ecs-service"
-  	iam_role        = aws_iam_role.ecs-service-role.name
+  	# iam_role        = aws_iam_role.ecs-service-role.name
   	cluster         = aws_ecs_cluster.test-ecs-cluster.id
   	task_definition = aws_ecs_task_definition.microservice_a.family
   	desired_count   = 1
@@ -380,12 +392,17 @@ resource "aws_ecs_service" "test-ecs-service" {
     }
 
   	load_balancer {
-    	target_group_arn  = aws_alb_target_group.ecs-target-group.arn
+    	target_group_arn  = aws_alb_target_group.ecs-target-group-blue.arn
     	container_port    = 80
     	container_name    = "nginx"
-	}
+	  }
+    load_balancer {
+    	target_group_arn  = aws_alb_target_group.ecs-target-group-green.arn
+    	container_port    = 80
+    	container_name    = "nginx"
+	  }
   depends_on = [
-    aws_alb_listener.alb-listener,
+    aws_alb_listener.alb-listener-prod,
     aws_alb_listener.alb-listener-test
   ]
   
