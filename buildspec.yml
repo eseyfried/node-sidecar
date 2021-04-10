@@ -34,3 +34,7 @@ phases:
       - echo Pushing the NGINX Docker image...
       - docker push $NGINX_REPOSITORY_URI:latest
       - docker push $NGINX_REPOSITORY_URI:$IMAGE_TAG
+  artifacts:
+    files:
+      - "appspec.yml"
+      - "taskdef.json"
