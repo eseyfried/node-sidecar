@@ -36,5 +36,5 @@ phases:
       - docker push $NGINX_REPOSITORY_URI:$IMAGE_TAG
 artifacts:
   files:
-    - "appspec.yml"
-    - "taskdef.json"
+    - "/docker/app/appspec.yml"
+    - "/docker/app/taskdef.json"
