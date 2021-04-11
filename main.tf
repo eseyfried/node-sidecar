@@ -199,6 +199,30 @@ resource "aws_iam_instance_profile" "ecs-instance-profile" {
     }
 }
 
+resource "aws_security_group" "instance_sg" {
+  description = "controls direct access to application instances"
+  vpc_id = aws_vpc.demoVPC.id
+  name        = "application-instances-sg"
+
+  ingress {
+    protocol    = "tcp"
+    from_port   = 32768
+    to_port     = 65535
+    description = "Access from ALB"
+
+    security_groups = [
+      aws_security_group.test_public_sg.id,
+    ]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_alb" "ecs-load-balancer" {
     name                = "ecs-load-balancer"
     security_groups     = [aws_security_group.test_public_sg.id]
@@ -291,7 +315,7 @@ resource "aws_launch_configuration" "ecs-launch-configuration" {
       create_before_destroy = true
     }
 
-    security_groups             = [aws_security_group.test_public_sg.id]
+    security_groups             = [aws_security_group.instance_sg.id]
     associate_public_ip_address = "true"
     user_data                   = <<EOF
                                   #!/bin/bash
