@@ -322,7 +322,7 @@ data "aws_ecs_task_definition" "microservice_a" {
 
 resource "aws_ecs_task_definition" "microservice_a" {
     family                = "microservice_a"
-    memory                = "1024"
+    memory                = "768"
     container_definitions = <<DEF
 [
   {

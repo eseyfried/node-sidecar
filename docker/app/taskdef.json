@@ -55,5 +55,5 @@
       ],
     "networkMode": "bridge",
     "family": "microservice_a",
-    "memory": "1024"
+    "memory": "768"
 }
