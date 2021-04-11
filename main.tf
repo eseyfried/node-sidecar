@@ -327,7 +327,7 @@ resource "aws_ecs_task_definition" "microservice_a" {
   {
     "name": "nginx",
     "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/nginx-sidecar:latest",
-    "memory": 256,
+    "memory": 128,
     "cpu": 256,
     "essential": true,
     "portMappings": [
@@ -362,7 +362,7 @@ resource "aws_ecs_task_definition" "microservice_a" {
   {
     "name": "app",
     "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/node-sidecar:latest",
-    "memory": 256,
+    "memory": 128,
     "cpu": 256,
     "essential": true,
     "logConfiguration": {
@@ -385,7 +385,7 @@ resource "aws_ecs_service" "test-ecs-service" {
   	# iam_role        = aws_iam_role.ecs-service-role.name
   	cluster         = aws_ecs_cluster.test-ecs-cluster.id
   	task_definition = aws_ecs_task_definition.microservice_a.family
-  	desired_count   = 1
+  	desired_count   = var.desired_capacity
 
     deployment_controller {
         type = "CODE_DEPLOY"
@@ -396,11 +396,11 @@ resource "aws_ecs_service" "test-ecs-service" {
     	container_port    = 80
     	container_name    = "nginx"
 	  }
-    load_balancer {
-    	target_group_arn  = aws_alb_target_group.ecs-target-group-green.arn
-    	container_port    = 80
-    	container_name    = "nginx"
-	  }
+    # load_balancer {
+    # 	target_group_arn  = aws_alb_target_group.ecs-target-group-green.arn
+    # 	container_port    = 80
+    # 	container_name    = "nginx"
+	  # }
   depends_on = [
     aws_alb_listener.alb-listener-prod,
     aws_alb_listener.alb-listener-test

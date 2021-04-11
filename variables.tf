@@ -16,7 +16,7 @@ variable "ecs_cluster" {
 
 variable "max_instance_size" {
   description = "Maximum number of instances in the cluster"
-  default = 1
+  default = 3
 }
 
 variable "min_instance_size" {
@@ -26,5 +26,5 @@ variable "min_instance_size" {
 
 variable "desired_capacity" {
   description = "Desired number of instances in the cluster"
-  default = 1
+  default = 2
 }

@@ -5,7 +5,7 @@
         {
           "name": "nginx",
           "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/nginx-sidecar:latest",
-          "memory": 256,
+          "memory": 128,
           "cpu": 256,
           "essential": true,
           "portMappings": [
@@ -40,7 +40,7 @@
         {
           "name": "app",
           "image": "477829879262.dkr.ecr.us-east-1.amazonaws.com/node-sidecar:latest",
-          "memory": 256,
+          "memory": 128,
           "cpu": 256,
           "essential": true,
           "logConfiguration": {
