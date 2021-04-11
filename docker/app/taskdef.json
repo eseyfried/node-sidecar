@@ -54,5 +54,6 @@
         }
       ],
     "networkMode": "bridge",
-    "family": "microservice_a"
+    "family": "microservice_a",
+    "memory": "1024"
 }
